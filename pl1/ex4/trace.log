@@ -1,0 +1,21 @@
+12186 16:56:26.088675 execve("./prog", ["./prog"], 0x7ffeb9149348 /* 31 vars */) = 0
+12186 16:56:26.096238 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fd7b1ec7a10) = 12187
+12186 16:56:26.097686 wait4(-1,  <unfinished ...>
+12187 16:56:27.098916 exit_group(1)     = ?
+12187 16:56:27.100356 +++ exited with 1 +++
+12186 16:56:27.100630 <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 1}], 0, NULL) = 12187
+12186 16:56:27.100876 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=12187, si_uid=1000, si_status=1, si_utime=0, si_stime=0} ---
+12186 16:56:27.101561 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fd7b1ec7a10) = 12192
+12186 16:56:27.102653 wait4(-1,  <unfinished ...>
+12192 16:56:28.103547 exit_group(2)     = ?
+12192 16:56:28.104445 +++ exited with 2 +++
+12186 16:56:28.104738 <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 2}], 0, NULL) = 12192
+12186 16:56:28.105125 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=12192, si_uid=1000, si_status=2, si_utime=0, si_stime=0} ---
+12186 16:56:28.105918 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fd7b1ec7a10) = 12197
+12186 16:56:28.106694 wait4(-1,  <unfinished ...>
+12197 16:56:29.107372 exit_group(3)     = ?
+12197 16:56:29.107956 +++ exited with 3 +++
+12186 16:56:29.108143 <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 3}], 0, NULL) = 12197
+12186 16:56:29.108305 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=12197, si_uid=1000, si_status=3, si_utime=0, si_stime=0} ---
+12186 16:56:29.108906 exit_group(0)     = ?
+12186 16:56:29.109248 +++ exited with 0 +++

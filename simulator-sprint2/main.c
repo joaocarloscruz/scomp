@@ -6,22 +6,26 @@
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
-
+#include <fcntl.h>
+#include <signal.h>
 
 #define P_READ 0
 #define P_WRITE 1
-#define NUM_DRONES 50
+#define DRONE_PROGRAM "./drone_program"
+#define SCRIPT_DIR "drone_scripts"
+#define NUM_DRONES 5
+#define ARGUMENT_SIZE 50
 #define EXIT_ERROR -1
 
 int main(){
     pid_t drone_pid[NUM_DRONES];
     pid_t pid;
-    int fd[2];
+    int fd[NUM_DRONES][2];
 
     // creation of drone processes
     for(int i = 0; i < NUM_DRONES; i++){
 
-        if(pipe(fd) == - 1){
+        if(pipe(fd[i]) == - 1){
             perror("pipe failed");
             exit(EXIT_ERROR);
         }
@@ -32,15 +36,38 @@ int main(){
         }
         if(pid == 0){
             // Child Process
-            close(fd[P_READ]);
-            // script 
-            // ...
+            close(fd[i][P_READ]);
+            
 
-            //exec
+            // 1 - drone program | 2 - drone id | 3 - pipe fd | 4 - script path 
+            char drone_id[ARGUMENT_SIZE];
+            sprintf(drone_id, "%d", i);
+            char pipe_fd[ARGUMENT_SIZE];
+            sprintf(pipe_fd, "%d", fd[i][P_WRITE]);
+            char script_path[ARGUMENT_SIZE];
+            sprintf(script_path, "%s/drone%d_script.csv", SCRIPT_DIR, i);
+            
+            char* drone_argv[5];
+            drone_argv[0] = DRONE_PROGRAM;
+            drone_argv[1] = drone_id;
+            drone_argv[2] = pipe_fd;
+            drone_argv[3] = script_path;
+            drone_argv[4] = NULL;
+
+            printf("[Child PID %d]: %s %s %s %s\n", getpid(), drone_argv[0], drone_argv[1], drone_argv[2], drone_argv[3]);
+
+            execvp(drone_argv[0], drone_argv);
+
+            // exec fails
+            fprintf(stderr, "[Child PID %d]: Failed to execute '%s'",getpid(), DRONE_PROGRAM);
+            
+            close(fd[i][P_WRITE]);
+            exit(EXIT_ERROR); 
+
 
         } else {
             // Parent process
-            close(fd[P_WRITE]);
+            close(fd[i][P_WRITE]);
             drone_pid[i] = pid;
         }
 

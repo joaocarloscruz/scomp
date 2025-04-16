@@ -1,0 +1,1 @@
+The program "prog" will be executed once, as the exec will replace the existing program which, in this case, is the child and, since the kill() will only be executed if the pid = 0, that means that the child is the only one to execute the kill ( the exec).

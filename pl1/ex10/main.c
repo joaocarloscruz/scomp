@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #define NUM_CHILDREN 5
 #define NUMBER_POSITIONS 100000
@@ -9,6 +10,9 @@
 
 
 int main(){
+
+	struct timespec start_time, end_time;
+clock_gettime(CLOCK_MONOTONIC, &start_time);
 	int i;
 	pid_t pid;
 	int arr[NUMBER_POSITIONS];
@@ -63,7 +67,10 @@ int main(){
 
 	}
 
-
+	clock_gettime(CLOCK_MONOTONIC, &end_time);
+double elapsed = (end_time.tv_sec - start_time.tv_sec) +
+                 (end_time.tv_nsec - start_time.tv_nsec) / 1e9;
+printf("Elapsed time: %.6f seconds\n", elapsed);
 
 	return 0;
 }

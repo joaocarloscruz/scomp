@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
    pid_t child_pid[num_children];
    struct sigaction act1, act2;
 
-   memset(&act1, 0, sizeof(act1));
+   /*memset(&act1, 0, sizeof(act1));
    act1.sa_handler = handle_stop;
    act1.sa_flags = SA_RESTART;
    memset(&act2, 0, sizeof(act2));
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
 
    sigaction(SIGSTOP,&act1,NULL);
    sigaction(SIGCONT,&act2,NULL);
-      
+   */
    // create children
    for(int i = 0; i < num_children; i++){
       child_pid[i] = fork();

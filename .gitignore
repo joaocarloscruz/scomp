@@ -1,3 +1,7 @@
 */*/prog
+*/*/writer
+*/*/reader
+*/*/*.d
+*/*/*.o
 .idx/
 .vscode/

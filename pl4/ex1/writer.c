@@ -1,100 +1,57 @@
 #include "defs.h"
 
-#include <sys/mman.h>   // For mmap, munmap, shm_open, shm_unlink, MAP_FAILED
-#include <sys/stat.h>   // For mode constants (like S_IRUSR, S_IWUSR)
-#include <fcntl.h>      // For O_* constants (O_CREAT, O_RDWR, O_RDONLY)
-#include <unistd.h>     // For ftruncate, close, sleep (optional for reader)
-#include <stdio.h>      // For printf, perror, fgets
-#include <stdlib.h>     // For exit, atoi, EXIT_FAILURE
-#include <string.h>     // For strcpy, strlen
-
-int main() {
+int main() {    
+    SharedData* shared_data;
     int fd;
-    SharedData *shared_data;
-    char buffer[100]; // Input buffer
+    fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 
-    // 1. Create or open the shared memory object
-    // O_CREAT: Create if it doesn't exist
-    // O_RDWR: Open for read/write access
-    // 0660: Permissions (user read/write, group read/write)
-    fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0660);
-    if (fd == -1) {
-        perror("shm_open failed");
+    if(ftruncate(fd, DATA_SIZE) < 0){
+        perror("truncate error");
         exit(EXIT_FAILURE);
     }
-
-    // 2. Set the size of the shared memory object
-    if (ftruncate(fd, sizeof(SharedData)) == -1) {
-        perror("ftruncate failed");
-        close(fd); // Close the descriptor before exiting
-        shm_unlink(SHM_NAME); // Clean up the created object on failure
+    shared_data = mmap(NULL, DATA_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if(shared_data == MAP_FAILED){
+        perror("mmap error");
         exit(EXIT_FAILURE);
     }
+    shared_data->is_ready = 0;
 
-    // 3. Map the shared memory object into the process's address space
-    // PROT_READ | PROT_WRITE: Memory protection (allow reading and writing)
-    // MAP_SHARED: Changes are shared with other processes mapping the same object
-    shared_data = (SharedData *)mmap(NULL, sizeof(SharedData), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (shared_data == MAP_FAILED) {
-        perror("mmap failed");
-        close(fd);
-        shm_unlink(SHM_NAME); // Clean up
+    //read data
+    char *name = shared_data->name;
+    char *address = shared_data->address;
+    int num;
+    size_t len = 50; 
+    printf("Insert the student name:\n");
+    if(getline(&name, &len, stdin) < 0){
+        perror("read error");
         exit(EXIT_FAILURE);
     }
+    printf("name: %s\n", name);
 
-    // Successfully mapped, now we can access shared_data like a regular pointer
-
-    // 4. Initialize the data_available flag to 0 (data not ready yet)
-    shared_data->data_available = 0;
-
-    // 5. Get student data from the user
-    printf("Enter Student number: ");
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-        fprintf(stderr, "Error reading student number.\n");
-        // Cleanup before exit
-        munmap(shared_data, sizeof(SharedData));
-        close(fd);
-        // Consider not unlinking here, let reader or cleanup handle it
+    printf("Insert the student number\n");
+    if(scanf("%d", &num) < 0){
+        perror("read error");
         exit(EXIT_FAILURE);
     }
-    shared_data->number = atoi(buffer); // Convert string to integer
+    printf("number: %d\n", num);
+    shared_data->number = num;
 
-    printf("Enter Student name: ");
-    if (fgets(buffer, 50, stdin) == NULL) { // Use size consistent with shared_data->name
-         fprintf(stderr, "Error reading student name.\n");
-         munmap(shared_data, sizeof(SharedData));
-         close(fd);
-         exit(EXIT_FAILURE);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+
+    len = 100;
+    printf("Insert the student address \n");
+    if(getline(&address, &len , stdin) < 0){
+        perror("read error");
+        exit(EXIT_FAILURE);
     }
-    // Remove trailing newline if present
-    buffer[strcspn(buffer, "\n")] = '\0'; // Safer than strlen-1 check
-    strcpy(shared_data->name, buffer);
+    printf("address: %s\n", address);
 
-    printf("Enter Student address: ");
-     if (fgets(buffer, 100, stdin) == NULL) { // Use size consistent with shared_data->address
-         fprintf(stderr, "Error reading student address.\n");
-         munmap(shared_data, sizeof(SharedData));
-         close(fd);
-         exit(EXIT_FAILURE);
-    }
-    // Remove trailing newline if present
-    buffer[strcspn(buffer, "\n")] = '\0';
-    strcpy(shared_data->address, buffer);
 
-    // 6. Signal that data is now available
-    printf("\nMaking data available...\n");
-    shared_data->data_available = 1;
+    shared_data->is_ready = 1;
+    printf("Finished reading\n");
 
-    printf("Data written to shared memory.\n");
-
-    // 7. Cleanup (Writer typically doesn't unlink, lets the reader or last process do it)
-    if (munmap(shared_data, sizeof(SharedData)) == -1) {
-        perror("munmap failed");
-        // continue cleanup
-    }
-    if (close(fd) == -1) {
-        perror("close failed");
-    }
+    //detach
 
     return 0;
 }
